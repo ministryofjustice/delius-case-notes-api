@@ -32,7 +32,7 @@ class CaseNotesServiceTest extends Specification {
         def deliusCaseNote = service.addCaseNote(caseNote)
 
         then:
-        deliusCaseNote.isPresent() == true
+        deliusCaseNote.isPresent()
 
     }
 }

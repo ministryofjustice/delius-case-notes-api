@@ -4,7 +4,6 @@ import groovyx.net.http.HttpResponseException
 import groovyx.net.http.RESTClient
 import spock.lang.Shared
 import spock.lang.Specification
-import spock.lang.Unroll
 import uk.gov.justice.digital.noms.delius.config.Configuration
 
 class DeliusCaseNotesAPITest extends Specification {
@@ -12,7 +11,6 @@ class DeliusCaseNotesAPITest extends Specification {
     @Shared
     def x =  DeliusCaseNotesAPI.run(new Configuration())
 
-    @Unroll
     def "Happy path: Can post and write a case note"() {
 
         setup:
@@ -31,12 +29,10 @@ class DeliusCaseNotesAPITest extends Specification {
                     body: body,
                     requestContentType: "application/json")
 
-
         then:
         result.status == 201
     }
 
-    @Unroll
     def "Unhappy path: bad requests are rejected"() {
         when:
         new RESTClient("http://localhost:8080/casenote/")

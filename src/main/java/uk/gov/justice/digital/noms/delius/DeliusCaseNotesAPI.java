@@ -67,7 +67,4 @@ public class DeliusCaseNotesAPI {
         });
     }
 
-    public static void stop() {
-        Spark.stop();
-    }
 }
