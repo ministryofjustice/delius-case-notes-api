@@ -24,7 +24,7 @@ class DeliusCaseNotesAPITest extends Specification {
 
         when:
         def result = new RESTClient("http://localhost:8080/casenote/")
-                .post(
+                .put(
                     path: "nomis1234/note1234",
                     body: body,
                     requestContentType: "application/json")
@@ -36,7 +36,7 @@ class DeliusCaseNotesAPITest extends Specification {
     def "Unhappy path: bad requests are rejected"() {
         when:
         new RESTClient("http://localhost:8080/casenote/")
-                .post(
+                .put(
                 path: "nomis1234/note1234",
                 body: "{\"utter\":\"rubbish\"}",
                 requestContentType: "application/json")
