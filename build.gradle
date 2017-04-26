@@ -29,7 +29,7 @@ repositories {
 
 jar {
     manifest {
-        attributes 'Main-Class': 'uk.gov.justice.digital.noms.delius.CaseNotesAPI'
+        attributes 'Main-Class': 'uk.gov.justice.digital.noms.delius.DeliusCaseNotesAPI'
     }
 
     from {
@@ -45,7 +45,7 @@ dependencies {
     compile 'com.sparkjava:spark-core:2.5.4'
     compile 'com.fasterxml.jackson.core:jackson-databind:2.8.5'
     compile 'com.fasterxml.jackson.datatype:jackson-datatype-joda:2.8.5'
-    runtime 'ch.qos.logback:logback-classic:1.2.3'
+    compile 'ch.qos.logback:logback-classic:1.2.3'
     compileOnly "org.projectlombok:lombok:1.16.16"
 
     // Use the awesome Spock testing and specification framework even with Java
