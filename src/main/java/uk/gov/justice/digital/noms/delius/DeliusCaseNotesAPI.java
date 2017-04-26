@@ -9,7 +9,6 @@ import com.google.inject.name.Names;
 import org.eclipse.jetty.http.HttpStatus;
 import spark.Request;
 import spark.Response;
-import spark.Spark;
 import uk.gov.justice.digital.noms.delius.config.Configuration;
 import uk.gov.justice.digital.noms.delius.config.ObjectMapperFactory;
 import uk.gov.justice.digital.noms.delius.data.api.CaseNote;
@@ -22,7 +21,7 @@ import java.util.Optional;
 import static spark.Spark.before;
 import static spark.Spark.exception;
 import static spark.Spark.port;
-import static spark.Spark.post;
+import static spark.Spark.put;
 
 public class DeliusCaseNotesAPI {
 
@@ -42,7 +41,7 @@ public class DeliusCaseNotesAPI {
 
         before((request, response) -> response.type("application/json"));
 
-        post("/casenote/:nomisId/:noteId", (Request req, Response res) ->
+        put("/casenote/:nomisId/:noteId", (Request req, Response res) ->
                 {
                     CaseNoteBody caseNoteBody = objectMapper.readValue(req.body(), CaseNoteBody.class);
                     CaseNote caseNote = CaseNote.builder()
