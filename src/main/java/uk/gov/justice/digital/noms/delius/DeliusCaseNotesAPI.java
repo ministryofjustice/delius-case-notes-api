@@ -7,6 +7,8 @@ import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.name.Names;
 import org.eclipse.jetty.http.HttpStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import spark.Request;
 import spark.Response;
 import uk.gov.justice.digital.noms.delius.config.Configuration;
@@ -26,6 +28,7 @@ import static spark.Spark.put;
 public class DeliusCaseNotesAPI {
 
     private static final ObjectMapper objectMapper = ObjectMapperFactory.newObjectMapper();
+    private static final Logger logger = LoggerFactory.getLogger(DeliusCaseNotesAPI.class);
 
     public static void main(String[] args) {
 
@@ -43,6 +46,7 @@ public class DeliusCaseNotesAPI {
 
         put("/casenote/:nomisId/:noteId", (Request req, Response res) ->
                 {
+                    logger.info("Received request: {}", req.body());
                     CaseNoteBody caseNoteBody = objectMapper.readValue(req.body(), CaseNoteBody.class);
                     CaseNote caseNote = CaseNote.builder()
                             .nomisId(req.params(":nomisId"))
