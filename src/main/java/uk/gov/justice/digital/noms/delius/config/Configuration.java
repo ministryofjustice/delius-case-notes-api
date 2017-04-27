@@ -17,7 +17,7 @@ public class Configuration extends AbstractModule {
         bind(Service.class).to(CaseNotesService.class);
         bind(Repository.class).to(CaseNoteRepository.class);
 
-        bind(Integer.class).annotatedWith(Names.named("port")).toInstance(Integer.valueOf(Optional.ofNullable(System.getenv("PORT")).orElse("8080")));
+        bind(Integer.class).annotatedWith(Names.named("port")).toInstance(Integer.valueOf(Optional.ofNullable(System.getenv("PORT")).orElse("8090")));
     }
 
 }
