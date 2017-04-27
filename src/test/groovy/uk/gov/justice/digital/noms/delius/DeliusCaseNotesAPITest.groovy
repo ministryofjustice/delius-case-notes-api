@@ -2,14 +2,36 @@ package uk.gov.justice.digital.noms.delius
 
 import groovyx.net.http.HttpResponseException
 import groovyx.net.http.RESTClient
+import org.springframework.boot.SpringApplication
+import org.springframework.context.ConfigurableApplicationContext
+import org.springframework.http.HttpStatus
+import spock.lang.AutoCleanup
 import spock.lang.Shared
 import spock.lang.Specification
-import uk.gov.justice.digital.noms.delius.config.Configuration
+
+import java.util.concurrent.Callable
+import java.util.concurrent.Executors
+import java.util.concurrent.Future
+import java.util.concurrent.TimeUnit
 
 class DeliusCaseNotesAPITest extends Specification {
 
     @Shared
-    def x =  DeliusCaseNotesAPI.run(new Configuration())
+    @AutoCleanup
+    ConfigurableApplicationContext context
+
+    void setupSpec() {
+        Future future = Executors
+                .newSingleThreadExecutor().submit(
+                new Callable() {
+                    @Override
+                    public ConfigurableApplicationContext call() throws Exception {
+                        return (ConfigurableApplicationContext) SpringApplication
+                                .run(DeliusCaseNotesAPI.class, "--server.port=8090")
+                    }
+                })
+        context = future.get(60, TimeUnit.SECONDS)
+    }
 
     def "Happy path: Can post and write a case note"() {
 
@@ -23,11 +45,11 @@ class DeliusCaseNotesAPITest extends Specification {
                 "}"
 
         when:
-        def result = new RESTClient("http://localhost:8090/casenote/")
+        def result = new RESTClient("http://localhost:8090/delius/casenote/")
                 .put(
-                    path: "nomis1234/note1234",
-                    body: body,
-                    requestContentType: "application/json")
+                path: "nomis1234/note1234",
+                body: body,
+                requestContentType: "application/json")
 
         then:
         result.status == 201
@@ -35,7 +57,7 @@ class DeliusCaseNotesAPITest extends Specification {
 
     def "Unhappy path: bad requests are rejected"() {
         when:
-        new RESTClient("http://localhost:8090/casenote/")
+        new RESTClient("http://localhost:8090/delius/casenote/")
                 .put(
                 path: "nomis1234/note1234",
                 body: "{\"utter\":\"rubbish\"}",
@@ -45,6 +67,6 @@ class DeliusCaseNotesAPITest extends Specification {
         then:
         Exception e = thrown()
         e instanceof HttpResponseException
-        e.message == "Bad Request"
+        e.statusCode == HttpStatus.BAD_REQUEST.value()
     }
 }

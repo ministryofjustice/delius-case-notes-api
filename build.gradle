@@ -7,6 +7,10 @@
  * user guide available at https://docs.gradle.org/3.2.1/userguide/tutorial_java_projects.html
  */
 
+plugins {
+    id 'org.springframework.boot' version '1.5.3.RELEASE'
+}
+
 // Apply the java plugin to add support for Java
 apply plugin: 'java'
 
@@ -15,7 +19,7 @@ sourceCompatibility = 1.8
 // Apply application plugin for easy application start
 apply plugin: 'application'
 
-mainClassName = "uk.gov.justice.digital.noms.delius.CaseNotesAPI"
+mainClassName = "uk.gov.justice.digital.noms.delius.DeliusCaseNotesAPI"
 
 // Apply the groovy plugin to also add support for Groovy (needed for Spock)
 apply plugin: 'groovy'
@@ -27,28 +31,16 @@ repositories {
     jcenter()
 }
 
-jar {
-    manifest {
-        attributes 'Main-Class': 'uk.gov.justice.digital.noms.delius.DeliusCaseNotesAPI'
-    }
-
-    from {
-        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
-    }
-}
-
 // In this section you declare the dependencies for your production and test code
 dependencies {
-    // The production code uses the SLF4J logging API at compile time
-    compile 'org.slf4j:slf4j-api:1.7.21'
-    compile 'com.google.inject:guice:4.1.0'
-    compile 'com.sparkjava:spark-core:2.5.4'
-    compile 'com.fasterxml.jackson.core:jackson-databind:2.8.5'
+    compile 'org.springframework.data:spring-data-rest-webmvc:2.6.3.RELEASE'
+    compile 'org.springframework.boot:spring-boot-starter-web:1.5.3.RELEASE'
     compile 'com.fasterxml.jackson.datatype:jackson-datatype-joda:2.8.5'
-    compile 'ch.qos.logback:logback-classic:1.2.3'
+
     compileOnly "org.projectlombok:lombok:1.16.16"
 
-    // Use the awesome Spock testing and specification framework even with Java
     testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
     testCompile 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1'
+    testCompile 'org.springframework.boot:spring-boot-starter-test'
+    testCompile 'org.spockframework:spock-spring:1.0-groovy-2.4'
 }

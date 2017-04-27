@@ -2,6 +2,7 @@ package uk.gov.justice.digital.noms.delius.repository;
 
 import uk.gov.justice.digital.noms.delius.data.delius.DeliusCaseNote;
 
+@org.springframework.stereotype.Repository
 public class CaseNoteRepository implements Repository {
 
     @Override

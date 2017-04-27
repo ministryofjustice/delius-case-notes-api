@@ -1,6 +1,6 @@
 package uk.gov.justice.digital.noms.delius.service;
 
-import com.google.inject.Inject;
+import org.springframework.beans.factory.annotation.Autowired;
 import uk.gov.justice.digital.noms.delius.data.api.CaseNote;
 import uk.gov.justice.digital.noms.delius.data.delius.DeliusCaseNote;
 import uk.gov.justice.digital.noms.delius.repository.Repository;
@@ -8,13 +8,14 @@ import uk.gov.justice.digital.noms.delius.transformers.DeliusCaseNotesTransforme
 
 import java.util.Optional;
 
-public class CaseNotesService implements Service{
+@org.springframework.stereotype.Service
+public class CaseNotesService implements Service {
 
     private final Repository repository;
     private final DeliusCaseNotesTransformer transformer;
 
-    @Inject
-    public CaseNotesService(Repository repository, DeliusCaseNotesTransformer transformer) {
+    @Autowired
+    public CaseNotesService(final Repository repository, final DeliusCaseNotesTransformer transformer) {
         this.repository = repository;
         this.transformer = transformer;
     }
