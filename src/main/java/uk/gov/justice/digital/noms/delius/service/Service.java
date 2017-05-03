@@ -7,5 +7,5 @@ import java.util.Optional;
 
 public interface Service {
 
-    Optional<DeliusCaseNote> addCaseNote(CaseNote caseNote);
+    Optional<DeliusCaseNote> createOrUpdateCaseNote(CaseNote caseNote);
 }

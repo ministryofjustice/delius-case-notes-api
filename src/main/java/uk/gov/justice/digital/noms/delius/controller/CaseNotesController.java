@@ -29,8 +29,8 @@ public class CaseNotesController {
 
     @RequestMapping("/casenote/{nomisId}/{noteId}")
     @ResponseStatus(HttpStatus.CREATED)
-    public DeliusCaseNote putCaseNote(final @PathVariable("nomisId") String nomisId,
-                                      final @PathVariable("noteId") String noteId,
+    public DeliusCaseNote putCaseNote(final @PathVariable("nomisId") Long nomisId,
+                                      final @PathVariable("noteId") Long noteId,
                                       final @RequestBody CaseNoteBody caseNoteBody) {
 
         final CaseNote caseNote = CaseNote.builder()
@@ -39,14 +39,14 @@ public class CaseNotesController {
                 .body(caseNoteBody)
                 .build();
 
-        Optional<DeliusCaseNote> created = caseNotesService.addCaseNote(caseNote);
+        Optional<DeliusCaseNote> created = caseNotesService.createOrUpdateCaseNote(caseNote);
 
         return created.orElse(null);
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(HttpMessageNotReadableException.class)
+    @ExceptionHandler({HttpMessageNotReadableException.class, IllegalArgumentException.class})
     public String badRequest(Exception e) {
-        return e.getCause().getMessage();
+        return e.getMessage();
     }
 }

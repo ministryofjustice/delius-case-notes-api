@@ -8,6 +8,10 @@ import org.springframework.http.HttpStatus
 import spock.lang.AutoCleanup
 import spock.lang.Shared
 import spock.lang.Specification
+import uk.gov.justice.digital.noms.delius.jpa.Contact
+import uk.gov.justice.digital.noms.delius.jpa.ContactType
+import uk.gov.justice.digital.noms.delius.repository.JpaContactRepository
+import uk.gov.justice.digital.noms.delius.repository.JpaContactTypeRepository
 
 import java.util.concurrent.Callable
 import java.util.concurrent.Executors
@@ -31,14 +35,54 @@ class DeliusCaseNotesAPITest extends Specification {
                     }
                 })
         context = future.get(60, TimeUnit.SECONDS)
+
+        def contactTypeRepository = context.getBean(JpaContactTypeRepository.class)
+        def contactType = new ContactType()
+        contactType.setContactTypeID(1234l)
+        contactType.setNomisContactType("nomisNoteType")
+        contactTypeRepository.save(contactType)
+
     }
 
-    def "Happy path: Can post and write a case note"() {
+    def "Happy path: Can put new case note"() {
 
         setup:
         def body = "{\n" +
-                "  \"noteType\": \"noteType\",\n" +
+                "  \"noteType\": \"nomisNoteType\",\n" +
                 "  \"content\": \"content\",\n" +
+                "  \"timestamp\": \"2017-04-26T09:35:00.833Z\",\n" +
+                "  \"staffName\": \"staffName\",\n" +
+                "  \"establishmentCode\": \"establishmentCode\"\n" +
+                "}"
+
+        when:
+        def contactRepository = context.getBean(JpaContactRepository.class)
+
+        def result = new RESTClient("http://localhost:8090/delius/casenote/")
+                .put(
+                path: "1234/5678",
+                body: body,
+                requestContentType: "application/json")
+
+        then:
+        result.status == 201
+        contactRepository.findByNomisCaseNoteID(5678l).isPresent()
+    }
+
+    def "Happy path: Can update existing case note"() {
+
+        setup:
+        def contactRepository = context.getBean(JpaContactRepository.class)
+        def contact = Contact.builder()
+            .nomisCaseNoteID(6666l)
+            .notes("old content")
+            .build();
+
+        contactRepository.save(contact)
+
+        def body = "{\n" +
+                "  \"noteType\": \"nomisNoteType\",\n" +
+                "  \"content\": \"new content\",\n" +
                 "  \"timestamp\": \"2017-04-26T09:35:00.833Z\",\n" +
                 "  \"staffName\": \"staffName\",\n" +
                 "  \"establishmentCode\": \"establishmentCode\"\n" +
@@ -47,19 +91,23 @@ class DeliusCaseNotesAPITest extends Specification {
         when:
         def result = new RESTClient("http://localhost:8090/delius/casenote/")
                 .put(
-                path: "nomis1234/note1234",
+                path: "1234/6666",
                 body: body,
                 requestContentType: "application/json")
 
         then:
         result.status == 201
+        def maybeContact = contactRepository.findByNomisCaseNoteID(6666l)
+        maybeContact.isPresent()
+        maybeContact.get().notes == "new content"
+
     }
 
     def "Unhappy path: bad requests are rejected"() {
         when:
         new RESTClient("http://localhost:8090/delius/casenote/")
                 .put(
-                path: "nomis1234/note1234",
+                path: "1234/5678",
                 body: "{\"utter\":\"rubbish\"}",
                 requestContentType: "application/json")
 

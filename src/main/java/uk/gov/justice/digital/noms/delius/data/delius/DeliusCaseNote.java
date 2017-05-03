@@ -8,8 +8,8 @@ import org.joda.time.DateTime;
 @Builder
 public class DeliusCaseNote {
 
-    private String nomisId;
-    private String noteId;
+    private Long nomisId;
+    private Long noteId;
     private String noteType;
     private String content;
     private DateTime timestamp;
