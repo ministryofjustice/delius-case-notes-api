@@ -5,8 +5,12 @@ import uk.gov.justice.digital.noms.delius.data.api.CaseNote;
 import uk.gov.justice.digital.noms.delius.data.delius.DeliusCaseNote;
 import uk.gov.justice.digital.noms.delius.jpa.Contact;
 import uk.gov.justice.digital.noms.delius.jpa.ContactType;
+import uk.gov.justice.digital.noms.delius.jpa.Event;
+import uk.gov.justice.digital.noms.delius.jpa.Offender;
+import uk.gov.justice.digital.noms.delius.repository.CustodialEvents;
 import uk.gov.justice.digital.noms.delius.repository.JpaContactRepository;
 import uk.gov.justice.digital.noms.delius.repository.JpaContactTypeRepository;
+import uk.gov.justice.digital.noms.delius.repository.JpaOffenderRepository;
 import uk.gov.justice.digital.noms.delius.transformers.DeliusCaseNotesTransformer;
 
 import java.util.Date;
@@ -17,14 +21,20 @@ public class CaseNotesService implements Service {
 
     private final JpaContactRepository contactRepository;
     private final JpaContactTypeRepository contactTypeRepository;
+    private final JpaOffenderRepository offenderRepository;
+    private final CustodialEvents custodialEventsService;
     private final DeliusCaseNotesTransformer transformer;
 
     @Autowired
     public CaseNotesService(final JpaContactRepository contactRepository,
                             final JpaContactTypeRepository contactTypeRepository,
+                            final JpaOffenderRepository offenderRepository,
+                            final CustodialEvents custodialEventsService,
                             final DeliusCaseNotesTransformer transformer) {
         this.contactRepository = contactRepository;
         this.contactTypeRepository = contactTypeRepository;
+        this.offenderRepository = offenderRepository;
+        this.custodialEventsService = custodialEventsService;
         this.transformer = transformer;
     }
 
@@ -56,17 +66,25 @@ public class CaseNotesService implements Service {
             throw new IllegalArgumentException("No Delius contact type found for nomis contact type '" + noteType + "'" );
         }
 
+        Optional<Offender> maybeOffender = offenderRepository.findByNomsNumber(caseNote.getNomisId().toString());
+        if (!maybeContactType.isPresent()) {
+            throw new IllegalArgumentException("No Delius offender found for nomis id '" + caseNote.getNomisId() + "'" );
+        }
+
+        Optional<Event> maybeCurrentCustodialEvent = custodialEventsService.currentCustodialEvent(maybeOffender.get().getOffenderID());
+        if (!maybeCurrentCustodialEvent.isPresent()) {
+            throw new IllegalArgumentException("No current custodial event for offender '" + maybeOffender.get().toString() + "'" );
+        }
+
         Date contactDate = caseNote.getBody().getTimestamp().toDate();
         Contact contact = Contact.builder()
                 .contactDate(contactDate)
                 .contactStartTime(contactDate)
                 .contactType(maybeContactType.get())
                 .nomisCaseNoteID(caseNote.getNoteId())
-                // TODO: Lookup "current custodial event"
-                // .eventId(???)
+                .eventId(maybeCurrentCustodialEvent.get().getEventID())
                 .notes(caseNote.getBody().getContent())
-                // TODO: Lookup offender from nomis id
-                // .offenderId(???)
+                .offenderId(maybeOffender.get().getOffenderID())
                 // TODO: lookup 'staff member' and from it provide:
                 // .probationAreaID(???)
                 // .staffEmployeeID(???)
@@ -76,6 +94,8 @@ public class CaseNotesService implements Service {
 
         return Optional.ofNullable(contactRepository.save(contact));
     }
+
+
 
     private Contact updateContact(Contact contact, DeliusCaseNote deliusCaseNote) {
         contact.setNotes(deliusCaseNote.getContent());

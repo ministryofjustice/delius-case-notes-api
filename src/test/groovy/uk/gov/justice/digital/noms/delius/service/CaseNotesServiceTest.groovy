@@ -16,7 +16,7 @@ class CaseNotesServiceTest extends Specification {
         setup:
         def mockContactRepository = Mock(JpaContactRepository.class)
         def mockContactTypeRepository = Mock(JpaContactTypeRepository.class)
-        def service = new CaseNotesService(mockContactRepository, mockContactTypeRepository, new DeliusCaseNotesTransformer())
+        def service = new CaseNotesService(mockContactRepository, mockContactTypeRepository, offenderRepository, eventRepository, new DeliusCaseNotesTransformer())
         def caseNoteBody = CaseNoteBody.builder()
                 .content("content")
                 .establishmentCode("establishmentCode")

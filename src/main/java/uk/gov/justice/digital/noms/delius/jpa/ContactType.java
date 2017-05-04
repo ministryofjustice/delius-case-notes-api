@@ -15,7 +15,7 @@ public class ContactType {
     @Column(name = "CONTACT_TYPE_ID")
     private Long contactTypeID;
 
-    @Column(name = "MADEUP_NOMIS_CONTACT_TYPE")
+    @Column(name = "NOMIS_CONTACT_TYPE")
     private String nomisContactType;
 
 }
