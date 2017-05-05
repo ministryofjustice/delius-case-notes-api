@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class CustodialEvents {
+public class CustodialEvents implements CustodialEventsService {
 
     private final JpaEventRepository eventRepository;
 
@@ -18,6 +18,7 @@ public class CustodialEvents {
         this.eventRepository = eventRepository;
     }
 
+    @Override
     public Optional<Event> currentCustodialEvent(Long offenderId) {
         List<Event> events = eventRepository.findByOffenderOffenderIDAndDisposalTerminationDateIsNullAndDisposalDisposalTypeSentenceTypeIn(offenderId, ImmutableSet.of("NC", "SC"));
         if (events.isEmpty()) {

@@ -10,8 +10,14 @@ import spock.lang.Shared
 import spock.lang.Specification
 import uk.gov.justice.digital.noms.delius.jpa.Contact
 import uk.gov.justice.digital.noms.delius.jpa.ContactType
+import uk.gov.justice.digital.noms.delius.jpa.Disposal
+import uk.gov.justice.digital.noms.delius.jpa.DisposalType
+import uk.gov.justice.digital.noms.delius.jpa.Event
+import uk.gov.justice.digital.noms.delius.jpa.Offender
 import uk.gov.justice.digital.noms.delius.repository.JpaContactRepository
 import uk.gov.justice.digital.noms.delius.repository.JpaContactTypeRepository
+import uk.gov.justice.digital.noms.delius.repository.JpaEventRepository
+import uk.gov.justice.digital.noms.delius.repository.JpaOffenderRepository
 
 import java.util.concurrent.Callable
 import java.util.concurrent.Executors
@@ -41,6 +47,38 @@ class DeliusCaseNotesAPITest extends Specification {
         contactType.setContactTypeID(1234l)
         contactType.setNomisContactType("nomisNoteType")
         contactTypeRepository.save(contactType)
+
+        def offenderRepository = context.getBean(JpaOffenderRepository.class)
+        def eventRepository = context.getBean(JpaEventRepository.class)
+        def offender = Offender.builder()
+                .nomsNumber("1234")
+                .offenderID(666l)
+                .softDeleted(false)
+                .build()
+
+        offenderRepository.save(offender)
+
+        def event = Event.builder()
+                .eventID(1)
+                .offender(offender)
+                .build()
+
+        def disposalType = DisposalType.builder()
+                .disposalTypeId(1)
+                .sentenceType("SC")
+                .build()
+
+        def disposal = Disposal.builder()
+                .event(event)
+                .disposalId(1)
+                .disposalType(disposalType)
+                .build()
+
+        event.setDisposal(disposal)
+
+        eventRepository.save(event)
+
+
 
     }
 

@@ -5,8 +5,11 @@ import spock.lang.Specification
 import uk.gov.justice.digital.noms.delius.data.api.CaseNote
 import uk.gov.justice.digital.noms.delius.data.api.CaseNoteBody
 import uk.gov.justice.digital.noms.delius.jpa.Contact
+import uk.gov.justice.digital.noms.delius.repository.CustodialEvents
+import uk.gov.justice.digital.noms.delius.repository.CustodialEventsService
 import uk.gov.justice.digital.noms.delius.repository.JpaContactRepository
 import uk.gov.justice.digital.noms.delius.repository.JpaContactTypeRepository
+import uk.gov.justice.digital.noms.delius.repository.JpaOffenderRepository
 import uk.gov.justice.digital.noms.delius.transformers.DeliusCaseNotesTransformer
 
 class CaseNotesServiceTest extends Specification {
@@ -16,7 +19,9 @@ class CaseNotesServiceTest extends Specification {
         setup:
         def mockContactRepository = Mock(JpaContactRepository.class)
         def mockContactTypeRepository = Mock(JpaContactTypeRepository.class)
-        def service = new CaseNotesService(mockContactRepository, mockContactTypeRepository, offenderRepository, eventRepository, new DeliusCaseNotesTransformer())
+        def mockOffenderRepository = Mock(JpaOffenderRepository.class)
+        def mockCustodialEventsService = Mock(CustodialEventsService.class)
+        def service = new CaseNotesService(mockContactRepository, mockContactTypeRepository, mockOffenderRepository, mockCustodialEventsService, new DeliusCaseNotesTransformer())
         def caseNoteBody = CaseNoteBody.builder()
                 .content("content")
                 .establishmentCode("establishmentCode")

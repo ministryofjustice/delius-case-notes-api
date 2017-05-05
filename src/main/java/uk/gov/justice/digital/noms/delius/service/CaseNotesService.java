@@ -8,6 +8,7 @@ import uk.gov.justice.digital.noms.delius.jpa.ContactType;
 import uk.gov.justice.digital.noms.delius.jpa.Event;
 import uk.gov.justice.digital.noms.delius.jpa.Offender;
 import uk.gov.justice.digital.noms.delius.repository.CustodialEvents;
+import uk.gov.justice.digital.noms.delius.repository.CustodialEventsService;
 import uk.gov.justice.digital.noms.delius.repository.JpaContactRepository;
 import uk.gov.justice.digital.noms.delius.repository.JpaContactTypeRepository;
 import uk.gov.justice.digital.noms.delius.repository.JpaOffenderRepository;
@@ -22,14 +23,14 @@ public class CaseNotesService implements Service {
     private final JpaContactRepository contactRepository;
     private final JpaContactTypeRepository contactTypeRepository;
     private final JpaOffenderRepository offenderRepository;
-    private final CustodialEvents custodialEventsService;
+    private final CustodialEventsService custodialEventsService;
     private final DeliusCaseNotesTransformer transformer;
 
     @Autowired
     public CaseNotesService(final JpaContactRepository contactRepository,
                             final JpaContactTypeRepository contactTypeRepository,
                             final JpaOffenderRepository offenderRepository,
-                            final CustodialEvents custodialEventsService,
+                            final CustodialEventsService custodialEventsService,
                             final DeliusCaseNotesTransformer transformer) {
         this.contactRepository = contactRepository;
         this.contactTypeRepository = contactTypeRepository;
@@ -67,7 +68,7 @@ public class CaseNotesService implements Service {
         }
 
         Optional<Offender> maybeOffender = offenderRepository.findByNomsNumber(caseNote.getNomisId().toString());
-        if (!maybeContactType.isPresent()) {
+        if (!maybeOffender.isPresent()) {
             throw new IllegalArgumentException("No Delius offender found for nomis id '" + caseNote.getNomisId() + "'" );
         }
 
