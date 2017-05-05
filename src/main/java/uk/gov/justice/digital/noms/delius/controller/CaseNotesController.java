@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.justice.digital.noms.delius.data.api.CaseNote;
@@ -27,7 +28,7 @@ public class CaseNotesController {
         this.caseNotesService = caseNotesService;
     }
 
-    @RequestMapping("/casenote/{nomisId}/{noteId}")
+    @RequestMapping(value = "/casenote/{nomisId}/{noteId}", method = RequestMethod.PUT)
     @ResponseStatus(HttpStatus.CREATED)
     public DeliusCaseNote putCaseNote(final @PathVariable("nomisId") Long nomisId,
                                       final @PathVariable("noteId") Long noteId,
@@ -49,4 +50,11 @@ public class CaseNotesController {
     public String badRequest(Exception e) {
         return e.getMessage();
     }
+
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler({IllegalStateException.class})
+    public String illegalState(Exception e) {
+        return e.getMessage();
+    }
+
 }
