@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.noms.delius
 
+import com.google.common.collect.ImmutableSet
 import groovyx.net.http.HttpResponseException
 import groovyx.net.http.RESTClient
 import org.springframework.boot.SpringApplication
@@ -8,16 +9,8 @@ import org.springframework.http.HttpStatus
 import spock.lang.AutoCleanup
 import spock.lang.Shared
 import spock.lang.Specification
-import uk.gov.justice.digital.noms.delius.jpa.Contact
-import uk.gov.justice.digital.noms.delius.jpa.ContactType
-import uk.gov.justice.digital.noms.delius.jpa.Disposal
-import uk.gov.justice.digital.noms.delius.jpa.DisposalType
-import uk.gov.justice.digital.noms.delius.jpa.Event
-import uk.gov.justice.digital.noms.delius.jpa.Offender
-import uk.gov.justice.digital.noms.delius.repository.JpaContactRepository
-import uk.gov.justice.digital.noms.delius.repository.JpaContactTypeRepository
-import uk.gov.justice.digital.noms.delius.repository.JpaEventRepository
-import uk.gov.justice.digital.noms.delius.repository.JpaOffenderRepository
+import uk.gov.justice.digital.noms.delius.jpa.*
+import uk.gov.justice.digital.noms.delius.repository.*
 
 import java.util.concurrent.Callable
 import java.util.concurrent.Executors
@@ -78,6 +71,27 @@ class DeliusCaseNotesAPITest extends Specification {
 
         eventRepository.save(event)
 
+        def probationAreaRepository = context.getBean(JpaProbationAreaRepository.class)
+        probationAreaRepository.save(ProbationArea.builder()
+            .probationAreaCode("establishmentCode")
+            .probationAreaId(5705l)
+            .build())
+
+        def staffrepository = context.getBean(JpaStaffRepository.class)
+
+        Team team = Team.builder()
+            .code("asdfghUAT")
+            .probationAreaId(5705L)
+            .teamId(2222)
+            .build()
+
+        Staff staff = Staff.builder()
+                .staffId(5705l)
+                .code("asdfghU")
+                .teams(ImmutableSet.of(team))
+                .build()
+
+        staffrepository.save(staff)
 
 
     }

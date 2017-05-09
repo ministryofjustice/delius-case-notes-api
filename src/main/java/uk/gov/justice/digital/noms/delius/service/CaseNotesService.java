@@ -7,11 +7,15 @@ import uk.gov.justice.digital.noms.delius.jpa.Contact;
 import uk.gov.justice.digital.noms.delius.jpa.ContactType;
 import uk.gov.justice.digital.noms.delius.jpa.Event;
 import uk.gov.justice.digital.noms.delius.jpa.Offender;
-import uk.gov.justice.digital.noms.delius.repository.CustodialEvents;
+import uk.gov.justice.digital.noms.delius.jpa.ProbationArea;
+import uk.gov.justice.digital.noms.delius.jpa.Staff;
+import uk.gov.justice.digital.noms.delius.jpa.Team;
 import uk.gov.justice.digital.noms.delius.repository.CustodialEventsService;
 import uk.gov.justice.digital.noms.delius.repository.JpaContactRepository;
 import uk.gov.justice.digital.noms.delius.repository.JpaContactTypeRepository;
 import uk.gov.justice.digital.noms.delius.repository.JpaOffenderRepository;
+import uk.gov.justice.digital.noms.delius.repository.JpaProbationAreaRepository;
+import uk.gov.justice.digital.noms.delius.repository.StaffService;
 import uk.gov.justice.digital.noms.delius.transformers.DeliusCaseNotesTransformer;
 
 import java.util.Date;
@@ -23,6 +27,9 @@ public class CaseNotesService implements Service {
     private final JpaContactRepository contactRepository;
     private final JpaContactTypeRepository contactTypeRepository;
     private final JpaOffenderRepository offenderRepository;
+    private final StaffService staffService;
+    private final JpaProbationAreaRepository probationAreaRepository;
+
     private final CustodialEventsService custodialEventsService;
     private final DeliusCaseNotesTransformer transformer;
 
@@ -30,11 +37,15 @@ public class CaseNotesService implements Service {
     public CaseNotesService(final JpaContactRepository contactRepository,
                             final JpaContactTypeRepository contactTypeRepository,
                             final JpaOffenderRepository offenderRepository,
+                            final JpaProbationAreaRepository probationAreaRepository,
+                            final StaffService staffService,
                             final CustodialEventsService custodialEventsService,
                             final DeliusCaseNotesTransformer transformer) {
         this.contactRepository = contactRepository;
         this.contactTypeRepository = contactTypeRepository;
         this.offenderRepository = offenderRepository;
+        this.staffService = staffService;
+        this.probationAreaRepository = probationAreaRepository;
         this.custodialEventsService = custodialEventsService;
         this.transformer = transformer;
     }
@@ -77,6 +88,20 @@ public class CaseNotesService implements Service {
             throw new IllegalArgumentException("No current custodial event for offender '" + maybeOffender.get().toString() + "'" );
         }
 
+        Optional<ProbationArea> maybeProbationArea = probationAreaRepository.findByProbationAreaCode(caseNote.getBody().getEstablishmentCode());
+
+        if (!maybeProbationArea.isPresent()) {
+            throw new IllegalArgumentException("No probation area found for nomis establishmentCode '" + caseNote.getBody().getEstablishmentCode() + "'" );
+        }
+
+        Optional<Staff> maybeStaff = staffService.getAppropriateStaffMemberForProbationArea(maybeProbationArea.get().getProbationAreaId());
+
+        if (!maybeStaff.isPresent()) {
+            throw new IllegalArgumentException("Could not resolve appropriate delius Staff for delius probationAreaCode '" + maybeProbationArea.get().getProbationAreaCode() + "'" );
+        }
+
+        Team team = maybeStaff.get().getTeams().iterator().next();
+
         Date contactDate = caseNote.getBody().getTimestamp().toDate();
         Contact contact = Contact.builder()
                 .contactDate(contactDate)
@@ -86,11 +111,10 @@ public class CaseNotesService implements Service {
                 .eventId(maybeCurrentCustodialEvent.get().getEventID())
                 .notes(caseNote.getBody().getContent())
                 .offenderId(maybeOffender.get().getOffenderID())
-                // TODO: lookup 'staff member' and from it provide:
-                // .probationAreaID(???)
-                // .staffEmployeeID(???)
-                // .staffId(???)
-                // .teamId(???)
+                .probationAreaID(maybeProbationArea.get().getProbationAreaId())
+                .staffEmployeeID(maybeStaff.get().getStaffId())
+                .staffId(maybeStaff.get().getStaffId())
+                .teamId(team.getTeamId())
                 .build();
 
         return Optional.ofNullable(contactRepository.save(contact));
