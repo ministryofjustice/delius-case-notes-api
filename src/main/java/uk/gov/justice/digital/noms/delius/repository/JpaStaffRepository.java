@@ -8,4 +8,7 @@ import java.util.Optional;
 public interface JpaStaffRepository extends JpaRepository<Staff, Long> {
 
     Optional<Staff> findByCodeLikeAndTeamsProbationAreaIdAndTeamsCodeLike(String staffCodeLike, Long probationAreaId, String teamCodeLike);
+
+    Optional<Staff> findByTeamsCodeLike(String teamCodeLike);
+
 }

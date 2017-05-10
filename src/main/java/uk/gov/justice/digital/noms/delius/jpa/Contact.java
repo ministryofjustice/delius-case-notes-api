@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.joda.time.DateTime;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -65,8 +66,8 @@ public class Contact {
 	@Column(name = "ALERT_ACTIVE")
 	@Builder.Default private String alertActive = "N";
 
-	@Column(name = "SENSITIVE", length = 1)
-	private boolean sensitive;
+    @Column(name = "SENSITIVE", length = 1)
+    @Builder.Default private String sensitive = "N";
 
 	@Column(name = "STAFF_EMPLOYEE_ID")
 	private Long staffEmployeeID;
@@ -78,6 +79,34 @@ public class Contact {
 	private Long nomisCaseNoteID;
 
 	@Column(name = "VISOR_EXPORTED")
-	@Builder.Default private boolean visorExported = false;
+	@Builder.Default private String visorExported = "N";
+
+    // Arbitrary defaults TODO:
+    @Column(name = "SOFT_DELETED")
+    @Builder.Default private Integer softDeleted = 0;
+
+    @Column(name = "PARTITION_AREA_ID")
+    @Builder.Default private Integer partitionAreaId = 0;
+
+    @Column(name = "CREATED_BY_USER_ID")
+    @Builder.Default private Integer createdByUserId = 0;
+
+    @Column(name = "TRUST_PROVIDER_FLAG")
+    @Builder.Default private Integer trustProviderFlag = 0;
+
+    @Column(name = "LAST_UPDATED_USER_ID")
+    @Builder.Default private Integer lastUpdateUserId = 0;
+
+    @Column(name = "TRUST_PROVIDER_TEAM_ID")
+    @Builder.Default private Integer trustProviderTeam = 0;
+
+    @Column(name = "CREATED_DATETIME")
+    @Temporal(TemporalType.TIME)
+    @Builder.Default private Date createdDateTime = DateTime.now().toDate();
+
+    @Column(name = "LAST_UPDATED_DATETIME")
+    @Temporal(TemporalType.TIME)
+    @Builder.Default private Date lastUpdatedDateTime = DateTime.now().toDate();
+
 
 }
