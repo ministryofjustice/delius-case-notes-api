@@ -1,9 +1,11 @@
 package uk.gov.justice.digital.noms.delius.service;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.justice.digital.noms.delius.data.api.CaseNote;
-import uk.gov.justice.digital.noms.delius.jpa.Contact;
+import uk.gov.justice.digital.noms.delius.jpa.*;
 import uk.gov.justice.digital.noms.delius.repository.CustodialEventsService;
 import uk.gov.justice.digital.noms.delius.repository.JpaContactTypeRepository;
 import uk.gov.justice.digital.noms.delius.repository.JpaOffenderRepository;
@@ -15,6 +17,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 @Component
 public class RepositoryBackedContactFactory implements ContactFactory {
@@ -38,81 +41,61 @@ public class RepositoryBackedContactFactory implements ContactFactory {
         this.custodialEventsService = custodialEventsService;
     }
 
-    private Function<Contact,Contact> contactBuilderForCaseNote(CaseNote caseNote) {
+    private static <T> T getOrThrow(Optional<T> value, String exception) {
 
-        Function<Contact, Contact> resolveContactType = cn -> Contact.builder()
-                .contactType(contactTypeRepository.findByNomisContactType(caseNote.getBody().getNoteType())
-                        .orElseThrow(() -> new IllegalArgumentException("No Delius contact type found for nomis contact type '" + caseNote.getBody().getNoteType() + "'" )))
-                .build();
+        return value.orElseThrow(() -> new IllegalArgumentException(exception));
+    }
 
+    private Contact.ContactBuilder contactBuilderForCaseNote(CaseNote caseNote) {
 
-        Function<Contact, Contact> resolveOffender = contact -> contact.toBuilder()
-                .offenderId(offenderRepository.findByNomsNumber(caseNote.getNomisId().toString())
-                        .orElseThrow(() -> new IllegalArgumentException("No Delius offender found for nomis id '" + caseNote.getNomisId() + "'" ))
-                        .getOffenderID())
-                .build();
-
-
-        Function<Contact,Contact> resolveCustodialEvent = contact -> contact.toBuilder()
-                .eventId(custodialEventsService.currentCustodialEvent(contact.getOffenderId())
-                        .orElseThrow(() -> new IllegalArgumentException("No current custodial event for offender id '" + contact.getOffenderId() + "'" ))
-                        .getEventID())
-                .build();
-
-        Function<Contact,Contact> resolveProbationArea = contact -> contact.toBuilder()
-                .probationAreaID(probationAreaRepository.findByProbationAreaCode(caseNote.getBody().getEstablishmentCode())
-                        .orElseThrow(() -> new IllegalArgumentException("No probation area found for nomis establishmentCode '" + caseNote.getBody().getEstablishmentCode() + "'" ))
-                        .getProbationAreaId())
-                .build();
-
-
-        Function<Contact,Contact> resolveStaff = contact -> contact.toBuilder()
-                .staffId(staffService.getAppropriateStaffMemberForProbationArea(contact.getProbationAreaID())
-                        .orElseThrow(() -> new IllegalArgumentException("Could not resolve appropriate delius Staff for delius probationAreaId '" + contact.getProbationAreaID() + "'" ))
-                        .getStaffId())
-                .build();
-
-        Function<Contact,Contact> resolveStaffEmployee = contact -> contact.toBuilder().staffEmployeeID(contact.getStaffId()).build();
-
-        Function<Contact,Contact> resolveTeam = contact -> contact.toBuilder()
-                .teamId(staffService.getAppropriateStaffMemberForProbationArea(contact.getProbationAreaID())
-                        .orElseThrow(() -> new IllegalArgumentException("Could not resolve appropriate delius Team for delius probationAreaId '" + contact.getProbationAreaID() + "'" ))
-                        .getTeams().iterator().next().getTeamId())
-                .build();
-
+        String nomisId = caseNote.getNomisId().toString();
+        String noteType = caseNote.getBody().getNoteType();
         Date contactDate = caseNote.getBody().getTimestamp().toDate();
-        Function<Contact,Contact> applyDate = contact -> contact.toBuilder()
-                .contactDate(contactDate)
-                .contactStartTime(contactDate)
-                .build();
+        String estCode = caseNote.getBody().getEstablishmentCode();
 
-        Function<Contact,Contact> applyCaseNote = contact -> contact.toBuilder()
-                .nomisCaseNoteID(caseNote.getNoteId())
-                .notes(caseNote.getBody().getContent())
-                .build();
+        ContactType contactType = getOrThrow(contactTypeRepository.findByNomisContactType(noteType),
+                "No Delius contact type found for nomis contact type '" + noteType + "'");
 
+        Long offenderId = getOrThrow(offenderRepository.findByNomsNumber(nomisId),
+                "No Delius offender found for nomis id '" + nomisId + "'").getOffenderID();
 
-        List<Function<Contact, Contact>> list = new ArrayList<Function<Contact, Contact>>() {
-            {
-                add(resolveContactType);
-                add(resolveOffender);
-                add(resolveCustodialEvent);
-                add(resolveProbationArea);
-                add(resolveStaff);
-                add(resolveStaffEmployee);
-                add(resolveTeam);
-                add(applyDate);
-                add(applyCaseNote);
-            }
-        };
+        Long eventId = getOrThrow(custodialEventsService.currentCustodialEvent(offenderId),
+                "No current custodial event for offender id '" + offenderId + "'" ).getEventID();
 
-        Optional<Function<Contact, Contact>> contactFunction = list.stream().reduce((x, y) -> (c) -> y.apply(x.apply(c)));
+        Long areaId = getOrThrow(probationAreaRepository.findByProbationAreaCode(estCode),
+                "No probation area found for nomis establishmentCode '" + estCode).getProbationAreaId();
 
-        return contactFunction.get();
+        Optional<Staff> staff = staffService.getAppropriateStaffMemberForProbationArea(areaId);
+
+        Long staffId = getOrThrow(staff,
+                "Could not resolve appropriate delius Staff for delius probationAreaId '" + areaId + "'").getStaffId();
+
+        Long teamId = getOrThrow(staff.flatMap(s -> s.getTeams().stream().map(Team::getTeamId).findFirst()),
+                "Could not resolve appropriate delius Team for delius probationAreaId '" + areaId + "'" );
+
+        return Contact.builder().
+                contactType(contactType).
+                offenderId(offenderId).
+                eventId(eventId).
+                probationAreaID(areaId).
+                staffId(staffId).
+                staffEmployeeID(staffId).
+                teamId(teamId).
+                contactDate(contactDate).
+                contactStartTime(contactDate).
+                nomisCaseNoteID(caseNote.getNoteId()).
+                notes(caseNote.getBody().getContent());
     }
 
     @Override
     public Contact deliusContactFrom(CaseNote caseNote) {
-        return contactBuilderForCaseNote(caseNote).apply(new Contact());
+        return contactBuilderForCaseNote(caseNote).build();
     }
 }
+
+/*
+    private static <T> Function<T, T> reduceFunctions(List<Function<T, T>> list) {
+
+        return list.stream().reduce(Function::compose).orElseGet(Function::identity);
+    }
+*/
