@@ -44,3 +44,12 @@ ALTER DATABASE DATAFILE '/opt/oracle/oradata/DELIUS/t_data.dbf' AUTOEXTEND ON MA
 ALTER DATABASE DATAFILE '/opt/oracle/oradata/DELIUS/t_reference_data.dbf' AUTOEXTEND ON MAXSIZE UNLIMITED;
 
 Then run the nd_906.ddl
+
+## Resolving the oracle drivers
+Helpfully, Oracle don't publish the drivers in any open repositories.
+You will have to download the jar from 
+http://www.oracle.com/technetwork/database/features/jdbc/jdbc-ucp-122-3110062.html
+
+and the easiest thing (if you have maven installed) is to install it into your local maven repo:
+
+mvn install:install-file -Dfile=ojdbc8.jar -DgroupId=com.oracle -DartifactId=ojdbc8 -Dversion=12.2.0.1 -Dpackaging=jar
