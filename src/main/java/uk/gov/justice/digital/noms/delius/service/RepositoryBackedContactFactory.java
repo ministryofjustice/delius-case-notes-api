@@ -56,19 +56,19 @@ public class RepositoryBackedContactFactory implements ContactFactory {
         ContactType contactType = getOrThrow(contactTypeRepository.findByNomisContactType(noteType),
                 "No Delius contact type found for nomis contact type '" + noteType + "'");
 
-        Long offenderId = getOrThrow(offenderRepository.findByNomsNumber(nomisId),
-                "No Delius offender found for nomis id '" + nomisId + "'").getOffenderID();
+        Long offenderId = getOrThrow(offenderRepository.findByNomsNumber(nomisId).map(Offender::getOffenderID),
+                "No Delius offender found for nomis id '" + nomisId + "'");
 
-        Long eventId = getOrThrow(custodialEventsService.currentCustodialEvent(offenderId),
-                "No current custodial event for offender id '" + offenderId + "'" ).getEventID();
+        Long eventId = getOrThrow(custodialEventsService.currentCustodialEvent(offenderId).map(Event::getEventID),
+                "No current custodial event for offender id '" + offenderId + "'" );
 
-        Long areaId = getOrThrow(probationAreaRepository.findByProbationAreaCode(estCode),
-                "No probation area found for nomis establishmentCode '" + estCode).getProbationAreaId();
+        Long areaId = getOrThrow(probationAreaRepository.findByProbationAreaCode(estCode).map(ProbationArea::getProbationAreaId),
+                "No probation area found for nomis establishmentCode '" + estCode + "'");
 
         Optional<Staff> staff = staffService.getAppropriateStaffMemberForProbationArea(areaId);
 
-        Long staffId = getOrThrow(staff,
-                "Could not resolve appropriate delius Staff for delius probationAreaId '" + areaId + "'").getStaffId();
+        Long staffId = getOrThrow(staff.map(Staff::getStaffId),
+                "Could not resolve appropriate delius Staff for delius probationAreaId '" + areaId + "'");
 
         Long teamId = getOrThrow(staff.flatMap(s -> s.getTeams().stream().map(Team::getTeamId).findFirst()),
                 "Could not resolve appropriate delius Team for delius probationAreaId '" + areaId + "'" );
