@@ -53,3 +53,13 @@ http://www.oracle.com/technetwork/database/features/jdbc/jdbc-ucp-122-3110062.ht
 and the easiest thing (if you have maven installed) is to install it into your local maven repo:
 
 mvn install:install-file -Dfile=ojdbc8.jar -DgroupId=com.oracle -DartifactId=ojdbc8 -Dversion=12.2.0.1 -Dpackaging=jar
+
+## Running the service against local oracle
+Assuming you have downloaded the oracle binaries, built a docker image, configured the database, applied the ddl, 
+dropped a load of FKs, inserted the dummy data from src/test/resources, downloaded the oracle drivers and installed 
+them somewhere discoverable by gradle, you will probably want to test it.
+
+As a temporary convenience, there is a spring profile to enable which will do just that. Pass the 
+following onto the command line when starting the application:
+
+--spring.profiles.active=oracle
