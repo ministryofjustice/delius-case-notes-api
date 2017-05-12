@@ -2,6 +2,7 @@ package uk.gov.justice.digital.noms.delius.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,10 +13,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.justice.digital.noms.delius.data.api.CaseNote;
 import uk.gov.justice.digital.noms.delius.data.api.CaseNoteBody;
-import uk.gov.justice.digital.noms.delius.data.delius.DeliusCaseNote;
+import uk.gov.justice.digital.noms.delius.service.CaseNotesService;
 import uk.gov.justice.digital.noms.delius.service.Service;
-
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/delius")
@@ -29,10 +28,9 @@ public class CaseNotesController {
     }
 
     @RequestMapping(value = "/casenote/{nomisId}/{noteId}", method = RequestMethod.PUT)
-    @ResponseStatus(HttpStatus.CREATED)
-    public DeliusCaseNote putCaseNote(final @PathVariable("nomisId") Long nomisId,
-                                      final @PathVariable("noteId") Long noteId,
-                                      final @RequestBody CaseNoteBody caseNoteBody) {
+    public ResponseEntity<Void> putCaseNote(final @PathVariable("nomisId") Long nomisId,
+                                                     final @PathVariable("noteId") Long noteId,
+                                                     final @RequestBody CaseNoteBody caseNoteBody) {
 
         final CaseNote caseNote = CaseNote.builder()
                 .noteId(noteId)
@@ -40,9 +38,9 @@ public class CaseNotesController {
                 .body(caseNoteBody)
                 .build();
 
-        Optional<DeliusCaseNote> created = caseNotesService.createOrUpdateCaseNote(caseNote);
+        CaseNotesService.Statuses status = caseNotesService.createOrUpdateCaseNote(caseNote);
 
-        return created.orElse(null);
+        return new ResponseEntity<>(httpStatusOf(status));
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -55,6 +53,18 @@ public class CaseNotesController {
     @ExceptionHandler({IllegalStateException.class})
     public String illegalState(Exception e) {
         return e.getMessage();
+    }
+
+    private HttpStatus httpStatusOf(Service.Statuses status) {
+        final HttpStatus httpStatus;
+        switch (status) {
+            case CREATED:
+                httpStatus = HttpStatus.CREATED;
+                break;
+            default:
+                httpStatus = HttpStatus.NO_CONTENT;
+        }
+        return httpStatus;
     }
 
 }

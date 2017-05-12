@@ -23,7 +23,7 @@ import java.util.Date;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@Builder(toBuilder = true)
 @Entity
 @Table(name = "CONTACT")
 @SequenceGenerator(name = "CONTACT_ID_SEQ", sequenceName = "CONTACT_ID_SEQ", allocationSize = 1)

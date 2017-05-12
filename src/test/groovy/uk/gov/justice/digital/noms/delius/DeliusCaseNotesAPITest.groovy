@@ -148,7 +148,7 @@ class DeliusCaseNotesAPITest extends Specification {
                 requestContentType: "application/json")
 
         then:
-        result.status == 201
+        result.status == 204
         def maybeContact = contactRepository.findByNomisCaseNoteID(6666l)
         maybeContact.isPresent()
         maybeContact.get().notes == "new content"
