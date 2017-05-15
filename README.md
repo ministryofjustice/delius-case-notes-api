@@ -15,8 +15,13 @@ You will need to
 There is an executable jar in /build/libs:
 - java -jar delius-case-notes-api.jar
 
-To run up on a specific port:
-- java -jar -Dserver.port=8090 delius-case-notes-api.jar
+## Configuration
+Overridable properties:
+base.url (default '/delius')
+server.port (default '8080')
+
+To run up on a specific port and base url:
+- java -jar -Dserver.port=8090 -Dbase.url='/mydelius' delius-case-notes-api.jar
  
 # Setting up local oracle
 Assuming you have jumped through all the docker hoops, log on as SYSTEM and create a new user:

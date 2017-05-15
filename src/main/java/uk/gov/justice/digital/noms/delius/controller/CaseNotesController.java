@@ -17,7 +17,7 @@ import uk.gov.justice.digital.noms.delius.service.CaseNotesService;
 import uk.gov.justice.digital.noms.delius.service.Service;
 
 @RestController
-@RequestMapping("/delius")
+@RequestMapping("${base.url:/delius}")
 public class CaseNotesController {
 
     private final Service caseNotesService;
