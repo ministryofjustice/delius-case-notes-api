@@ -63,3 +63,25 @@ As a temporary convenience, there is a spring profile to enable which will do ju
 following onto the command line when starting the application:
 
 --spring.profiles.active=oracle
+
+## Running as a docker container
+Run buildDocker.sh. This creates the docker image.
+
+The default behaviour is to for the container to run against an oracle database.
+The host name for the oracle instance is exposed by the environment varaiable DB_HOSTNAME.
+
+If you want to run against the sort-of realistic oracle db container described above, the easiest
+thing to do is to create a docker network:
+
+docker network create <network_name>
+
+and attach the oracle container to it:
+
+docker network connect <oracle_container_name> <network_name>
+
+Finally, run the delius_case_notes_api image on the network:
+
+docker run -it -e DB_HOSTNAME=<oracle_container_name> --net=<network_name> delius-case-notes-api
+
+
+To run the image and provide the host name, do 
