@@ -17,36 +17,42 @@ There is an executable jar in /build/libs:
 
 ## Configuration
 Overridable properties:
-base.url (default '/delius')
-server.port (default '8080')
+
+`base.url` (default '/delius')
+
+`server.port` (default '8080')
 
 To run up on a specific port and base url:
-- java -jar -Dserver.port=8090 -Dbase.url='/mydelius' delius-case-notes-api.jar
- 
+- `java -jar -Dserver.port=8090 -Dbase.url='/mydelius' delius-case-notes-api.jar`
+or, equivalently
+- `java -jar delius-case-notes-api.jar --server.port=8090 --base.url='/mydelius'`
+
 # Setting up local oracle
 Assuming you have jumped through all the docker hoops, log on as SYSTEM and create a new user:
 
-create user c##deliusapi identified by deliusapipwd container = all;
-grant connect to c##deliusapi;
-grant all privileges to c##deliusapi;
+`create user c##deliusapi identified by deliusapipwd container = all;`
+
+`grant connect to c##deliusapi;`
+
+`grant all privileges to c##deliusapi;`
 
 logon as c##deliusapi
 
-CREATE TABLESPACE T_DATA datafile '/opt/oracle/oradata/DELIUS/t_data.dbf' size 10m;
+`CREATE TABLESPACE T_DATA datafile '/opt/oracle/oradata/DELIUS/t_data.dbf' size 10m;`
 
-create TABLESPACE T_AUDIT_DATA datafile '/opt/oracle/oradata/DELIUS/t_audit_data.dbf' size 10m;
+`create TABLESPACE T_AUDIT_DATA datafile '/opt/oracle/oradata/DELIUS/t_audit_data.dbf' size 10m;`
 
-create TABLESPACE T_SPG_DATA datafile '/opt/oracle/oradata/DELIUS/t_spg_data.dbf' size 10m;
+`create TABLESPACE T_SPG_DATA datafile '/opt/oracle/oradata/DELIUS/t_spg_data.dbf' size 10m;`
 
-create TABLESPACE T_CHANGE_CAPTURE_DATA datafile '/opt/oracle/oradata/DELIUS/t_change_capture_data.dbf' size 10m;
+`create TABLESPACE T_CHANGE_CAPTURE_DATA datafile '/opt/oracle/oradata/DELIUS/t_change_capture_data.dbf' size 10m;`
 
-create TABLESPACE T_DOCUMENT_DATA datafile '/opt/oracle/oradata/DELIUS/t_document_data.dbf' size 10m;
+`create TABLESPACE T_DOCUMENT_DATA datafile '/opt/oracle/oradata/DELIUS/t_document_data.dbf' size 10m;`
 
-create TABLESPACE T_REFERENCE_DATA datafile '/opt/oracle/oradata/DELIUS/t_reference_data.dbf' size 10m;
+`create TABLESPACE T_REFERENCE_DATA datafile '/opt/oracle/oradata/DELIUS/t_reference_data.dbf' size 10m;`
 
-ALTER DATABASE DATAFILE '/opt/oracle/oradata/DELIUS/t_data.dbf' AUTOEXTEND ON MAXSIZE UNLIMITED;
+`ALTER DATABASE DATAFILE '/opt/oracle/oradata/DELIUS/t_data.dbf' AUTOEXTEND ON MAXSIZE UNLIMITED;`
 
-ALTER DATABASE DATAFILE '/opt/oracle/oradata/DELIUS/t_reference_data.dbf' AUTOEXTEND ON MAXSIZE UNLIMITED;
+`ALTER DATABASE DATAFILE '/opt/oracle/oradata/DELIUS/t_reference_data.dbf' AUTOEXTEND ON MAXSIZE UNLIMITED;`
 
 Then run the nd_906.ddl
 
@@ -57,9 +63,9 @@ http://www.oracle.com/technetwork/database/features/jdbc/jdbc-ucp-122-3110062.ht
 
 and the easiest thing (if you have maven installed) is to install it into your local maven repo:
 
-mvn install:install-file -Dfile=ojdbc8.jar -DgroupId=com.oracle -DartifactId=ojdbc8 -Dversion=12.2.0.1 -Dpackaging=jar
+`mvn install:install-file -Dfile=ojdbc8.jar -DgroupId=com.oracle -DartifactId=ojdbc8 -Dversion=12.2.0.1 -Dpackaging=jar`
 
-## Running the service against local oracle
+# Running the service against local oracle
 Assuming you have downloaded the oracle binaries, built a docker image, configured the database, applied the ddl, 
 dropped a load of FKs, inserted the dummy data from src/test/resources, downloaded the oracle drivers and installed 
 them somewhere discoverable by gradle, you will probably want to test it.
@@ -67,9 +73,9 @@ them somewhere discoverable by gradle, you will probably want to test it.
 As a temporary convenience, there is a spring profile to enable which will do just that. Pass the 
 following onto the command line when starting the application:
 
---spring.profiles.active=oracle
+`--spring.profiles.active=oracle`
 
-## Running as a docker container
+# Running as a docker container
 Run buildDocker.sh. This creates the docker image.
 
 The default behaviour is to for the container to run against an oracle database.
@@ -79,15 +85,15 @@ The host name for the oracle instance is exposed by the environment varaiable DB
 If you want to run against the sort-of realistic oracle db container described above, the easiest
 thing to do is to create a docker network:
 
-docker network create <network_name>
+`docker network create <network_name>`
 
 and attach the oracle container to it:
 
-docker network connect <oracle_container_name> <network_name>
+`docker network connect <oracle_container_name> <network_name>`
 
 Finally, run the delius_case_notes_api image on the network:
 
-docker run -it -e DB_HOSTNAME=<oracle_container_name> --net=<network_name> -p 8080:8080 delius-case-notes-api
+`docker run -it -e DB_HOSTNAME=<oracle_container_name> --net=<network_name> -p 8080:8080 delius-case-notes-api`
 
 
 ## Running as a docker container with the in-memory H2 db
@@ -95,4 +101,4 @@ No need to set up a docker network.
 
 You will need to force the 'default' spring profile:
 
-docker run -it -p 8080:8080 delius-case-notes-api --spring.profiles.active=default
+`docker run -it -p 8080:8080 delius-case-notes-api --spring.profiles.active=default`
