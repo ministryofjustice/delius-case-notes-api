@@ -1,23 +1,23 @@
 package uk.gov.justice.digital.noms.delius.service;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.justice.digital.noms.delius.data.api.CaseNote;
-import uk.gov.justice.digital.noms.delius.jpa.*;
+import uk.gov.justice.digital.noms.delius.jpa.Contact;
+import uk.gov.justice.digital.noms.delius.jpa.ContactType;
+import uk.gov.justice.digital.noms.delius.jpa.Event;
+import uk.gov.justice.digital.noms.delius.jpa.Offender;
+import uk.gov.justice.digital.noms.delius.jpa.ProbationArea;
+import uk.gov.justice.digital.noms.delius.jpa.Staff;
+import uk.gov.justice.digital.noms.delius.jpa.Team;
 import uk.gov.justice.digital.noms.delius.repository.CustodialEventsService;
 import uk.gov.justice.digital.noms.delius.repository.JpaContactTypeRepository;
 import uk.gov.justice.digital.noms.delius.repository.JpaOffenderRepository;
 import uk.gov.justice.digital.noms.delius.repository.JpaProbationAreaRepository;
 import uk.gov.justice.digital.noms.delius.repository.StaffService;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 @Component
 public class RepositoryBackedContactFactory implements ContactFactory {
