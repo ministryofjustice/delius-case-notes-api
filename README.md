@@ -82,7 +82,7 @@ docker network connect <oracle_container_name> <network_name>
 
 Finally, run the delius_case_notes_api image on the network:
 
-docker run -it -e DB_HOSTNAME=<oracle_container_name> --net=<network_name> delius-case-notes-api
+docker run -it -e DB_HOSTNAME=<oracle_container_name> --net=<network_name> -p 8080:8080 delius-case-notes-api
 
 
 ## Running as a docker container with the in-memory H2 db
@@ -90,4 +90,4 @@ No need to set up a docker network.
 
 You will need to force the 'default' spring profile:
 
-docker run -it delius-case-notes-api --spring.profiles.active=default
+docker run -it -p 8080:8080 delius-case-notes-api --spring.profiles.active=default
