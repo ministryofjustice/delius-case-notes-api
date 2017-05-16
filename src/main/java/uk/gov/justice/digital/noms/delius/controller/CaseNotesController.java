@@ -32,7 +32,7 @@ public class CaseNotesController {
     }
 
     @RequestMapping(value = "/casenote/{nomisId}/{noteId}", method = RequestMethod.PUT)
-    public ResponseEntity<Void> putCaseNote(final @PathVariable("nomisId") Long nomisId,
+    public ResponseEntity<Void> putCaseNote(final @PathVariable("nomisId") String nomisId,
                                                      final @PathVariable("noteId") Long noteId,
                                                      final @RequestBody CaseNoteBody caseNoteBody) {
 

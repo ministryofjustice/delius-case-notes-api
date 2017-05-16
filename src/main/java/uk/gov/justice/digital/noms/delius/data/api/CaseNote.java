@@ -9,7 +9,7 @@ import lombok.NonNull;
 public class CaseNote {
 
     @NonNull
-    private Long nomisId;
+    private String nomisId;
     @NonNull
     private Long noteId;
     @NonNull

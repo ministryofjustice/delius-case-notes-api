@@ -25,7 +25,7 @@ class CaseNotesServiceTest extends Specification {
                 .build()
 
         def caseNote = CaseNote.builder()
-                .nomisId(1234l)
+                .nomisId("1234")
                 .noteId(5678l)
                 .body(caseNoteBody)
                 .build()
