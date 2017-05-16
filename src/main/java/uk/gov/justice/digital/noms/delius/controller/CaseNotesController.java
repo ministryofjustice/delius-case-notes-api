@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.noms.delius.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +22,8 @@ import uk.gov.justice.digital.noms.delius.service.Service;
 @RequestMapping("${base.url:/delius}")
 public class CaseNotesController {
 
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
     private final Service caseNotesService;
 
     @Autowired
@@ -32,11 +36,14 @@ public class CaseNotesController {
                                                      final @PathVariable("noteId") Long noteId,
                                                      final @RequestBody CaseNoteBody caseNoteBody) {
 
+        logger.info("Received PUT for nomisId {}, noteId {} : {}", nomisId, noteId, caseNoteBody);
+
         final CaseNote caseNote = CaseNote.builder()
                 .noteId(noteId)
                 .nomisId(nomisId)
                 .body(caseNoteBody)
                 .build();
+
 
         CaseNotesService.Statuses status = caseNotesService.createOrUpdateCaseNote(caseNote);
 
