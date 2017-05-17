@@ -1,14 +1,17 @@
 package uk.gov.justice.digital.noms.delius
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.common.collect.ImmutableSet
 import groovyx.net.http.HttpResponseException
 import groovyx.net.http.RESTClient
+import org.joda.time.DateTime
 import org.springframework.boot.SpringApplication
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.http.HttpStatus
 import spock.lang.AutoCleanup
 import spock.lang.Shared
 import spock.lang.Specification
+import uk.gov.justice.digital.noms.delius.data.api.CaseNoteBody
 import uk.gov.justice.digital.noms.delius.jpa.*
 import uk.gov.justice.digital.noms.delius.repository.*
 
@@ -93,7 +96,6 @@ class DeliusCaseNotesAPITest extends Specification {
 
         staffrepository.save(staff)
 
-
     }
 
     def "Happy path: Can put new case note"() {
@@ -125,20 +127,26 @@ class DeliusCaseNotesAPITest extends Specification {
 
         setup:
         def contactRepository = context.getBean(JpaContactRepository.class)
+        def now = DateTime.now()
         def contact = Contact.builder()
             .nomisCaseNoteID(6666l)
             .notes("old content")
+            .contactDate(now.toDate())
             .build();
 
         contactRepository.save(contact)
 
-        def body = "{\n" +
-                "  \"noteType\": \"nomisNoteType\",\n" +
-                "  \"content\": \"new content\",\n" +
-                "  \"timestamp\": \"2017-04-26T09:35:00.833Z\",\n" +
-                "  \"staffName\": \"staffName\",\n" +
-                "  \"establishmentCode\": \"establishmentCode\"\n" +
-                "}"
+        def caseNoteBody = CaseNoteBody.builder()
+            .noteType("nomisNoteType")
+            .content("new content")
+            .timestamp(now.plusMinutes(1))
+            .staffName("staffName")
+            .establishmentCode("establishmentCode")
+            .build()
+
+        def objectMapper = context.getBean(ObjectMapper.class)
+
+        def body = objectMapper.writeValueAsString(caseNoteBody)
 
         when:
         def result = new RESTClient("http://localhost:8090/delius/casenote/")
