@@ -4,7 +4,7 @@ import uk.gov.justice.digital.noms.delius.data.api.CaseNote;
 
 public interface Service {
 
-    enum Statuses {CREATED, UPDATED};
+    enum Statuses {CREATED, CONFLICT, UPDATED};
 
     CaseNotesService.Statuses createOrUpdateCaseNote(CaseNote caseNote);
 }

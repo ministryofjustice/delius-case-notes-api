@@ -68,6 +68,9 @@ public class CaseNotesController {
             case CREATED:
                 httpStatus = HttpStatus.CREATED;
                 break;
+            case CONFLICT:
+                httpStatus = HttpStatus.CONFLICT;
+                break;
             default:
                 httpStatus = HttpStatus.NO_CONTENT;
         }

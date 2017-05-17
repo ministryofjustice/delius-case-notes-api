@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.noms.delius.service;
 
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import uk.gov.justice.digital.noms.delius.data.api.CaseNote;
 import uk.gov.justice.digital.noms.delius.data.delius.DeliusCaseNote;
@@ -32,27 +33,29 @@ public class CaseNotesService implements Service {
         Optional<Contact> existingContact = contactRepository.findByNomisCaseNoteID(deliusCaseNote.getNoteId());
         final Statuses status;
         if (existingContact.isPresent()) {
-            updateContact(existingContact.get(), deliusCaseNote);
-            status = Statuses.UPDATED;
+            status = updateContact(existingContact.get(), deliusCaseNote);
         } else {
-            createContact(caseNote);
-            status = Statuses.CREATED;
+            status = createContact(caseNote);
         }
 
         return status;
     }
 
 
-
-    private Contact createContact(CaseNote caseNote) {
-        return contactRepository.save(contactFactory.deliusContactFrom(caseNote));
+    private Statuses createContact(CaseNote caseNote) {
+        contactRepository.save(contactFactory.deliusContactFrom(caseNote));
+        return Statuses.CREATED;
     }
 
 
-
-    private Contact updateContact(Contact contact, DeliusCaseNote deliusCaseNote) {
+    private Statuses updateContact(Contact contact, DeliusCaseNote deliusCaseNote) {
+        DateTime existingTimestamp = new DateTime(contact.getContactDate());
+        if (!deliusCaseNote.getTimestamp().isAfter(existingTimestamp)) {
+            return Statuses.CONFLICT;
+        }
         contact.setNotes(deliusCaseNote.getContent());
-        return contactRepository.save(contact);
+        contactRepository.save(contact);
+        return Statuses.UPDATED;
     }
 
 }
