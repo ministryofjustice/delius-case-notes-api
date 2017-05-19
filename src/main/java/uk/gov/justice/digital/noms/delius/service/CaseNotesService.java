@@ -1,7 +1,12 @@
 package uk.gov.justice.digital.noms.delius.service;
 
 import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import uk.gov.justice.digital.noms.delius.data.api.CaseNote;
 import uk.gov.justice.digital.noms.delius.data.delius.DeliusCaseNote;
 import uk.gov.justice.digital.noms.delius.jpa.Contact;
@@ -16,6 +21,7 @@ public class CaseNotesService implements Service {
     private final JpaContactRepository contactRepository;
     private final DeliusCaseNotesTransformer transformer;
     private final ContactFactory contactFactory;
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     public CaseNotesService(final JpaContactRepository contactRepository,
@@ -27,34 +33,34 @@ public class CaseNotesService implements Service {
     }
 
     @Override
-    public Statuses createOrUpdateCaseNote(CaseNote caseNote) {
+    @Transactional
+//    @Transactional(isolation = Isolation.SERIALIZABLE) TODO: This should work, but not with H2
+    public synchronized Statuses createOrUpdateCaseNote(CaseNote caseNote) {
         DeliusCaseNote deliusCaseNote = transformer.toDeliusCaseNote(caseNote);
 
         Optional<Contact> existingContact = contactRepository.findByNomisCaseNoteID(deliusCaseNote.getNoteId());
-        final Statuses status;
-        if (existingContact.isPresent()) {
-            status = updateContact(existingContact.get(), deliusCaseNote);
-        } else {
-            status = createContact(caseNote);
-        }
+       final Statuses status = existingContact.map(contact -> updateContact(contact, deliusCaseNote)).orElseGet(() -> createContact(caseNote));
 
         return status;
     }
 
-
     private Statuses createContact(CaseNote caseNote) {
-        contactRepository.save(contactFactory.deliusContactFrom(caseNote));
+        Contact contact = contactFactory.deliusContactFrom(caseNote);
+        logger.info("creating {}", contact);
+        contactRepository.save(contact);
         return Statuses.CREATED;
     }
 
 
     private Statuses updateContact(Contact contact, DeliusCaseNote deliusCaseNote) {
+        logger.info("Updating with {}", deliusCaseNote);
         DateTime existingTimestamp = new DateTime(contact.getContactDate());
+        logger.info("comparing new timestamp {} to existing {}", deliusCaseNote.getTimestamp(), existingTimestamp);
         if (!deliusCaseNote.getTimestamp().isAfter(existingTimestamp)) {
             return Statuses.CONFLICT;
         }
         contact.setNotes(deliusCaseNote.getContent());
-        contactRepository.save(contact);
+        contact.setContactDate(deliusCaseNote.getTimestamp().toDate());
         return Statuses.UPDATED;
     }
 

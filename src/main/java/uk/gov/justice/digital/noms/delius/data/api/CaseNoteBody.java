@@ -6,7 +6,7 @@ import lombok.NonNull;
 import org.joda.time.DateTime;
 
 @Data
-@Builder
+@Builder(toBuilder = true)
 public class CaseNoteBody {
     @NonNull
     private String noteType;

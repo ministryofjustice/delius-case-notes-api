@@ -2,7 +2,9 @@ package uk.gov.justice.digital.noms.delius
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.common.collect.ImmutableSet
+import groovyx.net.http.AsyncHTTPBuilder
 import groovyx.net.http.HttpResponseException
+import groovyx.net.http.Method
 import groovyx.net.http.RESTClient
 import org.joda.time.DateTime
 import org.springframework.boot.SpringApplication
@@ -161,6 +163,48 @@ class DeliusCaseNotesAPITest extends Specification {
         maybeContact.isPresent()
         maybeContact.get().notes == "new content"
 
+    }
+
+    def "Can handle concurrent create/update" () {
+        setup:
+        def http = new AsyncHTTPBuilder(
+                poolSize : 5,
+                uri : 'http://localhost:8090/delius/casenote/1234/6666',
+                contentType : "application/json" )
+
+        def now = DateTime.now()
+
+        def caseNoteBody = CaseNoteBody.builder()
+                .noteType("nomisNoteType")
+                .content("Mary")
+                .timestamp(now)
+                .staffName("staffName")
+                .establishmentCode("establishmentCode")
+                .build()
+
+        def objectMapper = context.getBean(ObjectMapper.class)
+
+        when:
+        def caseNote1 = objectMapper.writeValueAsString(caseNoteBody)
+        def caseNote2 = objectMapper.writeValueAsString(caseNoteBody.toBuilder().timestamp(now.plusMinutes(1)).content("had").build())
+        def caseNote3 = objectMapper.writeValueAsString(caseNoteBody.toBuilder().timestamp(now.plusMinutes(2)).content("a").build())
+        def caseNote4 = objectMapper.writeValueAsString(caseNoteBody.toBuilder().timestamp(now.plusMinutes(3)).content("little").build())
+        def caseNote5 = objectMapper.writeValueAsString(caseNoteBody.toBuilder().timestamp(now.plusMinutes(4)).content("lamb").build())
+
+        http.request(Method.PUT) { body = caseNote3 }
+        http.request(Method.PUT) { body = caseNote1 }
+        http.request(Method.PUT) { body = caseNote5 }
+        http.request(Method.PUT) { body = caseNote4 }
+        http.request(Method.PUT) { body = caseNote2 }
+
+        then:
+        Thread.sleep(5000)
+
+        def contactRepository = context.getBean(JpaContactRepository.class)
+
+        def maybeContact = contactRepository.findByNomisCaseNoteID(6666l)
+        maybeContact.isPresent()
+        maybeContact.get().getNotes() == "lamb"
     }
 
     def "Unhappy path: bad requests are rejected"() {

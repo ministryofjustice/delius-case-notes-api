@@ -35,7 +35,7 @@ public class Contact {
 	private Long contactID;
 
 	@Column(name = "CONTACT_DATE")
-	@Temporal(TemporalType.DATE)
+	@Temporal(TemporalType.TIMESTAMP)
 	private Date contactDate;
 
 	@Column(name = "CONTACT_START_TIME")
