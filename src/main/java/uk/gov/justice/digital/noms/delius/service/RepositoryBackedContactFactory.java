@@ -83,7 +83,7 @@ public class RepositoryBackedContactFactory implements ContactFactory {
                 teamId(teamId).
                 contactDate(contactDate).
                 contactStartTime(contactDate).
-                lastUpdatedDateTime(caseNote.getBody().getRaisedTimestamp().toDate()).
+                lastUpdatedDateTime(caseNote.getBody().getSystemTimestamp().toDate()).
                 nomisCaseNoteID(caseNote.getNoteId()).
                 notes(caseNote.getBody().getContent());
     }

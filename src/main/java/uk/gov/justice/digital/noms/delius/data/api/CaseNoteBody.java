@@ -15,7 +15,7 @@ public class CaseNoteBody {
     @NonNull
     private DateTime contactTimestamp;
     @NonNull
-    private DateTime raisedTimestamp;
+    private DateTime systemTimestamp;
     @NonNull
     private String staffName;
     @NonNull

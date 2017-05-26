@@ -23,7 +23,7 @@ class CaseNotesServiceTest extends Specification {
                 .noteType("noteType")
                 .staffName("staffName")
                 .contactTimestamp(timestamp)
-                .raisedTimestamp(timestamp)
+                .systemTimestamp(timestamp)
                 .build()
 
         def caseNote = CaseNote.builder()
@@ -58,7 +58,7 @@ class CaseNotesServiceTest extends Specification {
                 .noteType("noteType")
                 .staffName("staffName")
                 .contactTimestamp(timestamp)
-                .raisedTimestamp(DateTime.now())
+                .systemTimestamp(DateTime.now())
                 .build()
 
         def caseNote = CaseNote.builder()
@@ -90,7 +90,7 @@ class CaseNotesServiceTest extends Specification {
                 .noteType("noteType")
                 .staffName("staffName")
                 .contactTimestamp(timestamp)
-                .raisedTimestamp(timestamp.minusDays(1))
+                .systemTimestamp(timestamp.minusDays(1))
                 .build()
 
         def caseNote = CaseNote.builder()

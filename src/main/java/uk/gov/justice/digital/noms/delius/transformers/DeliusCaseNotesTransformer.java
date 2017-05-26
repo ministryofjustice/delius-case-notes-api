@@ -19,7 +19,7 @@ public class DeliusCaseNotesTransformer {
                 .staffName(body.getStaffName())
                 .noteType(body.getNoteType())
                 .contactTimestamp(body.getContactTimestamp())
-                .raisedTimestamp(body.getRaisedTimestamp())
+                .raisedTimestamp(body.getSystemTimestamp())
                 .build();
     }
 }

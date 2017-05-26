@@ -20,7 +20,7 @@ class DeliusCaseNotesTransformerTest extends Specification {
                 .noteType("noteType")
                 .staffName("staffName")
                 .contactTimestamp(now)
-                .raisedTimestamp(now)
+                .systemTimestamp(now)
                 .build()
 
         def caseNote = CaseNote.builder()
