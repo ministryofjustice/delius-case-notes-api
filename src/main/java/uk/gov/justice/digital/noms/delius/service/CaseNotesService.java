@@ -4,9 +4,6 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import uk.gov.justice.digital.noms.delius.data.api.CaseNote;
 import uk.gov.justice.digital.noms.delius.data.delius.DeliusCaseNote;
 import uk.gov.justice.digital.noms.delius.jpa.Contact;
@@ -33,7 +30,7 @@ public class CaseNotesService implements Service {
     }
 
     @Override
-    @Transactional
+//    @Transactional
 //    @Transactional(isolation = Isolation.SERIALIZABLE) TODO: This should work, but not with H2
     public synchronized Statuses createOrUpdateCaseNote(CaseNote caseNote) {
         DeliusCaseNote deliusCaseNote = transformer.toDeliusCaseNote(caseNote);
@@ -54,13 +51,14 @@ public class CaseNotesService implements Service {
 
     private Statuses updateContact(Contact contact, DeliusCaseNote deliusCaseNote) {
         logger.info("Updating with {}", deliusCaseNote);
-        DateTime existingTimestamp = new DateTime(contact.getContactDate());
-        logger.info("comparing new timestamp {} to existing {}", deliusCaseNote.getTimestamp(), existingTimestamp);
-        if (!deliusCaseNote.getTimestamp().isAfter(existingTimestamp)) {
+        DateTime existingTimestamp = new DateTime(contact.getLastUpdatedDateTime());
+        logger.info("comparing new timestamp {} to existing {}", deliusCaseNote.getRaisedTimestamp(), existingTimestamp);
+        if (!deliusCaseNote.getRaisedTimestamp().isAfter(existingTimestamp)) {
             return Statuses.CONFLICT;
         }
         contact.setNotes(deliusCaseNote.getContent());
-        contact.setContactDate(deliusCaseNote.getTimestamp().toDate());
+        contact.setLastUpdatedDateTime(deliusCaseNote.getRaisedTimestamp().toDate());
+        contactRepository.save(contact);
         return Statuses.UPDATED;
     }
 

@@ -19,7 +19,8 @@ class DeliusCaseNotesTransformerTest extends Specification {
                 .establishmentCode("establishmentCode")
                 .noteType("noteType")
                 .staffName("staffName")
-                .timestamp(now)
+                .contactTimestamp(now)
+                .raisedTimestamp(now)
                 .build()
 
         def caseNote = CaseNote.builder()
@@ -38,7 +39,8 @@ class DeliusCaseNotesTransformerTest extends Specification {
                 .noteId(5678l)
                 .noteType("noteType")
                 .staffName("staffName")
-                .timestamp(now)
+                .contactTimestamp(now)
+                .raisedTimestamp(now)
                 .build()
         result == expected
     }

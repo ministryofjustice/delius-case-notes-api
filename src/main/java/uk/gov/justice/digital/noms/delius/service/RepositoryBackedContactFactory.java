@@ -50,7 +50,7 @@ public class RepositoryBackedContactFactory implements ContactFactory {
 
         String nomisId = caseNote.getNomisId().toString();
         String noteType = caseNote.getBody().getNoteType();
-        Date contactDate = caseNote.getBody().getTimestamp().toDate();
+        Date contactDate = caseNote.getBody().getContactTimestamp().toDate();
         String estCode = caseNote.getBody().getEstablishmentCode();
 
         ContactType contactType = getOrThrow(contactTypeRepository.findByNomisContactType(noteType),
@@ -83,6 +83,7 @@ public class RepositoryBackedContactFactory implements ContactFactory {
                 teamId(teamId).
                 contactDate(contactDate).
                 contactStartTime(contactDate).
+                lastUpdatedDateTime(caseNote.getBody().getRaisedTimestamp().toDate()).
                 nomisCaseNoteID(caseNote.getNoteId()).
                 notes(caseNote.getBody().getContent());
     }

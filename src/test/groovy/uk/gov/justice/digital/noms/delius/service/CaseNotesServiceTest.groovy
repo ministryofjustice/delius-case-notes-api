@@ -11,7 +11,7 @@ import uk.gov.justice.digital.noms.delius.transformers.DeliusCaseNotesTransforme
 class CaseNotesServiceTest extends Specification {
 
 
-    def "service behaves appropriately"() {
+    def "can update existing contact"() {
         setup:
         def mockContactRepository = Mock(JpaContactRepository.class)
         def mockContactFactory = Mock(ContactFactory.class)
@@ -22,7 +22,8 @@ class CaseNotesServiceTest extends Specification {
                 .establishmentCode("establishmentCode")
                 .noteType("noteType")
                 .staffName("staffName")
-                .timestamp(timestamp)
+                .contactTimestamp(timestamp)
+                .raisedTimestamp(timestamp)
                 .build()
 
         def caseNote = CaseNote.builder()
@@ -31,7 +32,10 @@ class CaseNotesServiceTest extends Specification {
                 .body(caseNoteBody)
                 .build()
 
-        def aContact = Optional.of(Contact.builder().contactDate(timestamp.minusHours(1).toDate()).build())
+        def aContact = Optional.of(Contact.builder()
+                .contactDate(timestamp.minusHours(1).toDate())
+                .lastUpdatedDateTime(timestamp.minusMinutes(10).toDate())
+                .build())
         when:
         mockContactRepository.findByNomisCaseNoteID(_) >> aContact
         mockContactRepository.save(aContact) >> aContact
@@ -53,7 +57,8 @@ class CaseNotesServiceTest extends Specification {
                 .establishmentCode("establishmentCode")
                 .noteType("noteType")
                 .staffName("staffName")
-                .timestamp(timestamp)
+                .contactTimestamp(timestamp)
+                .raisedTimestamp(DateTime.now())
                 .build()
 
         def caseNote = CaseNote.builder()
@@ -62,7 +67,7 @@ class CaseNotesServiceTest extends Specification {
                 .body(caseNoteBody)
                 .build()
 
-        def aContact = Optional.of(Contact.builder().contactDate(timestamp.toDate()).build())
+        def aContact = Optional.of(Contact.builder().lastUpdatedDateTime(timestamp.toDate()).build())
         when:
         mockContactRepository.findByNomisCaseNoteID(_) >> aContact
         mockContactRepository.save(aContact) >> aContact
@@ -84,7 +89,8 @@ class CaseNotesServiceTest extends Specification {
                 .establishmentCode("establishmentCode")
                 .noteType("noteType")
                 .staffName("staffName")
-                .timestamp(timestamp.minusDays(1))
+                .contactTimestamp(timestamp)
+                .raisedTimestamp(timestamp.minusDays(1))
                 .build()
 
         def caseNote = CaseNote.builder()

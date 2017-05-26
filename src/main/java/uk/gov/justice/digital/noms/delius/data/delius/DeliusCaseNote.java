@@ -12,7 +12,8 @@ public class DeliusCaseNote {
     private Long noteId;
     private String noteType;
     private String content;
-    private DateTime timestamp;
+    private DateTime contactTimestamp;
+    private DateTime raisedTimestamp;
     private String staffName;
     private String establishmentCode;
 }

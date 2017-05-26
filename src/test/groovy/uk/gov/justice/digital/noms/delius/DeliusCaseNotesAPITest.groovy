@@ -106,7 +106,8 @@ class DeliusCaseNotesAPITest extends Specification {
         def body = "{\n" +
                 "  \"noteType\": \"nomisNoteType\",\n" +
                 "  \"content\": \"content\",\n" +
-                "  \"timestamp\": \"2017-04-26T09:35:00.833Z\",\n" +
+                "  \"contactTimestamp\": \"2017-04-26T09:35:00.833Z\",\n" +
+                "  \"raisedTimestamp\": \"2017-04-26T09:35:00.833Z\",\n" +
                 "  \"staffName\": \"staffName\",\n" +
                 "  \"establishmentCode\": \"establishmentCode\"\n" +
                 "}"
@@ -134,6 +135,7 @@ class DeliusCaseNotesAPITest extends Specification {
             .nomisCaseNoteID(6666l)
             .notes("old content")
             .contactDate(now.toDate())
+            .lastUpdatedDateTime(now.toDate())
             .build();
 
         contactRepository.save(contact)
@@ -141,7 +143,8 @@ class DeliusCaseNotesAPITest extends Specification {
         def caseNoteBody = CaseNoteBody.builder()
             .noteType("nomisNoteType")
             .content("new content")
-            .timestamp(now.plusMinutes(1))
+            .contactTimestamp(now)
+            .raisedTimestamp(now.plusMinutes(1))
             .staffName("staffName")
             .establishmentCode("establishmentCode")
             .build()
@@ -177,7 +180,8 @@ class DeliusCaseNotesAPITest extends Specification {
         def caseNoteBody = CaseNoteBody.builder()
                 .noteType("nomisNoteType")
                 .content("Mary")
-                .timestamp(now)
+                .contactTimestamp(now)
+                .raisedTimestamp(now)
                 .staffName("staffName")
                 .establishmentCode("establishmentCode")
                 .build()
@@ -186,10 +190,10 @@ class DeliusCaseNotesAPITest extends Specification {
 
         when:
         def caseNote1 = objectMapper.writeValueAsString(caseNoteBody)
-        def caseNote2 = objectMapper.writeValueAsString(caseNoteBody.toBuilder().timestamp(now.plusMinutes(1)).content("had").build())
-        def caseNote3 = objectMapper.writeValueAsString(caseNoteBody.toBuilder().timestamp(now.plusMinutes(2)).content("a").build())
-        def caseNote4 = objectMapper.writeValueAsString(caseNoteBody.toBuilder().timestamp(now.plusMinutes(3)).content("little").build())
-        def caseNote5 = objectMapper.writeValueAsString(caseNoteBody.toBuilder().timestamp(now.plusMinutes(4)).content("lamb").build())
+        def caseNote2 = objectMapper.writeValueAsString(caseNoteBody.toBuilder().raisedTimestamp(now.plusMinutes(1)).content("had").build())
+        def caseNote3 = objectMapper.writeValueAsString(caseNoteBody.toBuilder().raisedTimestamp(now.plusMinutes(2)).content("a").build())
+        def caseNote4 = objectMapper.writeValueAsString(caseNoteBody.toBuilder().raisedTimestamp(now.plusMinutes(3)).content("little").build())
+        def caseNote5 = objectMapper.writeValueAsString(caseNoteBody.toBuilder().raisedTimestamp(now.plusMinutes(4)).content("lamb").build())
 
         http.request(Method.PUT) { body = caseNote3 }
         http.request(Method.PUT) { body = caseNote1 }

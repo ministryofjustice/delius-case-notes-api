@@ -18,6 +18,7 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Version;
 import java.util.Date;
 
 @Data
@@ -105,8 +106,14 @@ public class Contact {
     @Builder.Default private Date createdDateTime = DateTime.now().toDate();
 
     @Column(name = "LAST_UPDATED_DATETIME")
-    @Temporal(TemporalType.TIME)
+    @Temporal(TemporalType.TIMESTAMP)
     @Builder.Default private Date lastUpdatedDateTime = DateTime.now().toDate();
+
+
+	@Column(name = "ROW_VERSION")
+	@Version
+	public Long rowVersion;
+
 
 
 }
