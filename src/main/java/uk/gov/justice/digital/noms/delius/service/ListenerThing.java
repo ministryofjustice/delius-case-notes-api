@@ -8,6 +8,7 @@ import oracle.jdbc.driver.OracleConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import javax.sql.DataSource;
@@ -18,6 +19,7 @@ import java.sql.Statement;
 import java.util.Properties;
 
 @Service
+@Profile("oracle")
 public class ListenerThing {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -34,37 +36,34 @@ public class ListenerThing {
     private void doThings() throws SQLException {
         Connection connection = dataSource.getConnection();
 
-        if (connection.isWrapperFor(OracleConnection.class)) {
-            OracleConnection oracleConnection = connection.unwrap(OracleConnection.class);
+        OracleConnection oracleConnection = connection.unwrap(OracleConnection.class);
 
-            Properties prop = new Properties();
+        Properties prop = new Properties();
 
-            prop.setProperty(OracleConnection.DCN_NOTIFY_ROWIDS, "true");
-            prop.setProperty(OracleConnection.DCN_IGNORE_INSERTOP, "false");
-            prop.setProperty(OracleConnection.DCN_IGNORE_UPDATEOP, "false");
-            prop.setProperty(OracleConnection.NTF_QOS_PURGE_ON_NTFN, "false");
-            prop.setProperty(OracleConnection.DCN_BEST_EFFORT, "true");
+        prop.setProperty(OracleConnection.DCN_NOTIFY_ROWIDS, "true");
+        prop.setProperty(OracleConnection.DCN_IGNORE_INSERTOP, "false");
+        prop.setProperty(OracleConnection.DCN_IGNORE_UPDATEOP, "false");
+        prop.setProperty(OracleConnection.NTF_QOS_PURGE_ON_NTFN, "false");
+        prop.setProperty(OracleConnection.DCN_BEST_EFFORT, "true");
 
-            DatabaseChangeRegistration dcr = oracleConnection.registerDatabaseChangeNotification(prop);
+        DatabaseChangeRegistration dcr = oracleConnection.registerDatabaseChangeNotification(prop);
 
-            dcr.addListener(new MyListener());
+        dcr.addListener(new MyListener());
 
-            Statement stmt = oracleConnection.createStatement();
+        Statement stmt = oracleConnection.createStatement();
 
-            ((OracleStatement) stmt).setDatabaseChangeRegistration(dcr);
+        ((OracleStatement) stmt).setDatabaseChangeRegistration(dcr);
 
-            ResultSet rs = stmt.executeQuery("select CONTACT_ID from CONTACT where CONTACT_ID = '1'");
+        ResultSet rs = stmt.executeQuery("select CONTACT_ID from CONTACT where CONTACT_ID = '1'");
 
-            String[] tableNames = dcr.getTables();
+        String[] tableNames = dcr.getTables();
 
-            logger.info("registered tables: {}" , (Object[])tableNames);
+        logger.info("registered tables: {}", (Object[]) tableNames);
 
-            rs.close();
-            stmt.close();
-            connection.close();
-        } else {
-            logger.error("Not using an Oracle data source...");
-        }
+        rs.close();
+        stmt.close();
+        connection.close();
+
     }
 
 
